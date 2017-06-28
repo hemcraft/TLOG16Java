@@ -15,4 +15,19 @@ import java.util.List;
 public class TimeLogger {
     List<WorkMonth> months;
     
+    WorkMonth getWorkMonth(int i){
+        return months.get(i);
+    }
+    
+    boolean isNewMonth(WorkMonth wm){
+        if(months.contains(wm))
+            return false;
+        else
+            return true;
+    }
+    
+    void addMonth(WorkMonth wm){
+        if(isNewMonth(wm))
+            months.add(wm);
+    }
 }
