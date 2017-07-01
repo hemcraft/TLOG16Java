@@ -30,6 +30,10 @@ public class Task {
         this.startTime = LocalTime.parse(startTime);
         this.endTime = LocalTime.parse(endTime);
     }
+    
+    Task(String taskId){
+        this.taskId = taskId;
+    }
         
     String getTaskId(){
         return taskId;
@@ -47,21 +51,47 @@ public class Task {
         return comment;
     }
     
-    long getMinPerTask(){
+    public long getMinPerTask(){
         return endTime.getMinute() - startTime.getMinute();
     }
     
-    boolean isValidTaskId(){
-        if(taskId.length() == 4){
-            return taskId.matches("\\d\\d\\d\\d");
-        }else{
-            return taskId.matches("LT-\\d\\d\\d\\d");
-        }
+    void setTaskId(String taskid){
+        this.taskId = taskid;
     }
     
-    boolean isMultipleQuarterHour(){
-        if(getMinPerTask() % 15 == 0) return true;
-        
-        return false;
+    void setComment(String comment){
+        this.comment = comment;
+    }
+    
+    void setStartTime(int hour, int min){
+        this.startTime.of(hour, min);
+    }
+    
+    void setStartTime(String time){
+        this.startTime = LocalTime.parse(time);
+    }
+    
+    void setEndTime(int hour, int min){
+        this.endTime.of(hour, min);
+    }
+    
+    void setEndTime(String time){
+        this.endTime = LocalTime.parse(time);
+    }
+    
+    boolean isValidTaskId(){
+        return isValidRedMineTaskId() || isValidLTTaskId();
+    }
+    
+    boolean isValidRedMineTaskId(){
+        return taskId.matches("\\d\\d\\d\\d");
+    }
+    
+    boolean isValidLTTaskId(){
+        return taskId.matches("LT-\\d\\d\\d\\d");
+    }
+    
+    public boolean commonParts(Task t){
+        return !(this.getStartTime().isAfter(t.getEndTime())  || this.getEndTime().isBefore(t.getStartTime()));
     }
 }
