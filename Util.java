@@ -25,7 +25,7 @@ public class Util {
         return !(tasks.stream().anyMatch(task -> task.commonParts(t)));
     }
     
-    public static boolean isWeekday(LocalDate actualDay){        
+    public static boolean isWeekDay(LocalDate actualDay){        
         return (actualDay.getDayOfWeek().getValue() < 6);
     }
     

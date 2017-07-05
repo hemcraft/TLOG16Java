@@ -6,7 +6,9 @@
 package tlog16java;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,24 +16,27 @@ import java.util.List;
  * @author Andris
  */
 public class WorkDay {
-    List<Task> tasks;
+    ArrayList<Task> tasks;
     long requiredMinPerDay = 450;
     LocalDate actualDay = LocalDate.now();
     long sumPerDay;
     
     WorkDay(long requiredMinPerDay, LocalDate actualDay){
-        this.requiredMinPerDay = requiredMinPerDay;
+        this.requiredMinPerDay = requiredMinPerDay * 60;
         this.actualDay = actualDay;
+        tasks = new ArrayList<Task>();
     }
     
     WorkDay(long requiredMinPerDay){
-        this.requiredMinPerDay = requiredMinPerDay;
+        this.requiredMinPerDay = requiredMinPerDay * 60;
         this.actualDay = LocalDate.now();
+        tasks = new ArrayList<Task>();
     }
     
     WorkDay(){
         this.requiredMinPerDay = 450;
         this.actualDay = LocalDate.now();
+        tasks = new ArrayList<Task>();
     }
     
     Task getTasks(int i){
@@ -53,6 +58,7 @@ public class WorkDay {
     }
     
     long getSumPerDay(){
+        calculateSumPerDay();
         return sumPerDay;
     }
     
@@ -69,10 +75,29 @@ public class WorkDay {
     }
     
     void addTask(Task t){
-        if(Util.isMultipleQuarterHour(t)){
+        //if(Util.isMultipleQuarterHour(t)){
+        if(true)
             tasks.add(t);
-        }else{
+        //}else{
             
+        //}
+    }
+    
+    public LocalTime latestTaskEndTime(){
+        return tasks.get(tasks.size() - 1).getEndTime();
+    }
+    
+    public void writeTasks(){
+        for(int i = 0; i < tasks.size(); i++){
+            System.out.println(i + ": " + tasks.get(i).toString());
+        }
+    }
+    
+    public void listUnfinishedTasks(){
+        for(int i = 0; i < tasks.size(); i++){
+            if(tasks.get(i).isUnfinished()){
+                System.out.println(i + ": " + tasks.get(i).toString());
+            }
         }
     }
 }

@@ -71,12 +71,20 @@ public class Task {
         this.startTime = LocalTime.parse(time);
     }
     
+    void setStartTime(LocalTime time){
+        this.startTime = time;
+    }
+    
     void setEndTime(int hour, int min){
         this.endTime.of(hour, min);
     }
     
     void setEndTime(String time){
         this.endTime = LocalTime.parse(time);
+    }
+    
+    void setEndTime(LocalTime time){
+        this.endTime = time;
     }
     
     boolean isValidTaskId(){
@@ -93,5 +101,14 @@ public class Task {
     
     public boolean commonParts(Task t){
         return !(this.getStartTime().isAfter(t.getEndTime())  || this.getEndTime().isBefore(t.getStartTime()));
+    }
+    
+    public String toString(){
+        String temp = taskId + " : " + comment + " starts at: " + startTime + " ends at: " + endTime;
+        return temp;
+    }
+    
+    public boolean isUnfinished(){
+        return (endTime == null);
     }
 }
