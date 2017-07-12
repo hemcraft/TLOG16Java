@@ -19,6 +19,9 @@ import timelogger.exceptions.WeekendNotEnabledException;
  *
  * @author Andris
  */
+
+@lombok.Getter
+@lombok.Setter
 public class WorkMonth {
     private ArrayList<WorkDay> days;
     private YearMonth date;
@@ -35,40 +38,68 @@ public class WorkMonth {
         days = new ArrayList<WorkDay>();
     }
     
+    /**
+     * calculates the required minutes this month
+     */
     private void calculateRequiredMinPerMonth(){
         for(int i = 0; i < days.size(); i++){
             requiredMinPerMonth += days.get(i).getRequiredMinPerDay();
         }
     } 
     
+    /**
+     * calculates time spent working this month
+     * @throws EmptyTimeFieldException 
+     */
     private void calculateSumPerMonth() throws EmptyTimeFieldException{
         for(int i = 0; i < days.size(); i++){
             sumPerMonth = sumPerMonth + days.get(i).getSumPerDay();
         }
     }
     
-    public YearMonth getDate(){
+    /*public YearMonth getDate(){
         return date;
-    }
+    }*/
     
+    /**
+     * gets a member of the days
+     * @param i
+     * @return 
+     */
     public WorkDay getDays(int i){
         return days.get(i);
     }
-    
+    /**
+     * gets the list of days
+     * @return 
+     */
     public ArrayList<WorkDay> getDayList(){
         return days;
     }
     
+    /**
+     * getter
+     * @return
+     * @throws EmptyTimeFieldException 
+     */
     public long getSumPerMonth() throws EmptyTimeFieldException{
         calculateSumPerMonth();
         return sumPerMonth;
     }
     
+    /**
+     * getter
+     * @return 
+     */
     public long getRequiredMinPerMonth(){
         calculateRequiredMinPerMonth();
         return requiredMinPerMonth;
     }
-    
+    /**
+     * gets the extre minutes this month
+     * @return
+     * @throws EmptyTimeFieldException 
+     */
     public long getExtraMinPerMonth() throws EmptyTimeFieldException{
         long extraMinThisMonth = 0;
         for(int i = 0; i < days.size(); i++){
@@ -77,6 +108,11 @@ public class WorkMonth {
         return extraMinThisMonth;
     }
     
+    /**
+     * checks if given date is already stored
+     * @param workDay
+     * @return 
+     */
     public boolean isNewDate(WorkDay workDay){
             for(int i = 0; i < days.size(); i++){
                 if(workDay.getActualDay().equals(days.get(i).getActualDay()))
@@ -85,10 +121,23 @@ public class WorkMonth {
             return true;
     }
     
+    /**
+     * checks if date belongs to month
+     * @param workDay
+     * @return 
+     */
     public boolean isSameMonth(WorkDay workDay){
         return (date.getMonthValue() == workDay.getActualDay().getMonthValue());          
     }
     
+    /**
+     * adds day to the list of days
+     * @param wd
+     * @param isWeekendEnabled
+     * @throws WeekendNotEnabledException thrown if weekend is not enabled
+     * @throws NotNewDateException thrown if date already stored
+     * @throws NotTheSameMonthException thrown if date doesn't belong to month
+     */
     public void addWorkDay(WorkDay wd, boolean isWeekendEnabled) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException{
         boolean weekendDayToo = (isWeekendEnabled == true) && isSameMonth(wd) && isNewDate(wd);
         boolean weekDayOnly = (isWeekendEnabled == false) && (Util.isWeekDay(wd.getActualDay())) && isSameMonth(wd) && isNewDate(wd);
@@ -103,6 +152,13 @@ public class WorkMonth {
         }
     }
     
+    /**
+     * adds day to the list of days
+     * @param wd
+     * @param isWeekendEnabled
+     * @throws NotNewDateException thrown if date already stored
+     * @throws NotTheSameMonthException thrown if date doesn't belong to month
+     */
     public void addWorkDay(WorkDay wd) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException{
         boolean isWeekendEnabled = false;
         boolean weekDayOnly = (Util.isWeekDay(wd.getActualDay())) && isSameMonth(wd) && isNewDate(wd);
@@ -115,6 +171,9 @@ public class WorkMonth {
         }
     }
     
+    /**
+     * writes to the console
+     */
     public void writeDays(){
         for(int i = 0; i < days.size(); i++){
             System.out.println(i + ": " + days.get(i).getActualDay().toString());

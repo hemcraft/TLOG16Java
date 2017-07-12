@@ -20,6 +20,9 @@ import static tlog16java.Util.isSeparatedTime;
  *
  * @author Andris
  */
+
+@lombok.Getter
+@lombok.Setter
 public class WorkDay {
     private ArrayList<Task> tasks;
     private long requiredMinPerDay = 450;
@@ -50,14 +53,27 @@ public class WorkDay {
         tasks = new ArrayList<Task>();
     }
     
+    /**
+     * gets a member of the tasks
+     * @param i
+     * @return 
+     */
     public Task getTasks(int i){
         return tasks.get(i);
     }
     
+    /**
+     * gets the list of tasks
+     * @return 
+     */
     public ArrayList<Task> getTaskList(){
         return tasks;
     }
     
+    /**
+     * calculates the sumPerDay
+     * @throws EmptyTimeFieldException 
+     */
     private void calculateSumPerDay() throws EmptyTimeFieldException{
         sumPerDay = 0;
         /*if(tasks.isEmpty())
@@ -67,35 +83,54 @@ public class WorkDay {
         }
     }
     
-    public long getRequiredMinPerDay(){
-        return requiredMinPerDay;
-    }
-    
-    public LocalDate getActualDay(){
-        return actualDay;
-    }
-    
+    /**
+     * getter
+     * @return
+     * @throws EmptyTimeFieldException 
+     */
     public long getSumPerDay() throws EmptyTimeFieldException{
         calculateSumPerDay();
         return sumPerDay;
     }
     
+    /**
+     * gets the extra minutes done this day
+     * @return
+     * @throws EmptyTimeFieldException 
+     */
     public long getExtraMinPerDay() throws EmptyTimeFieldException{
         return (getSumPerDay() - requiredMinPerDay);
     }
     
+    /**
+     * sets requiredMinPerDay if it's greater than zero
+     * @param min
+     * @throws NegativeMinutesOfWorkException 
+     */
     public void setRequiredMinPerDay(long min) throws NegativeMinutesOfWorkException{
         if(min < 0)
             throw new NegativeMinutesOfWorkException("can't be negative");
         requiredMinPerDay = min;
     }
     
+    /**
+     * sets actualDay 
+     * @param year
+     * @param month
+     * @param day
+     * @throws FutureWorkException thrown if future date is given
+     */
     public void setActualDay(int year, int month, int day) throws FutureWorkException{
         if(LocalDate.of(year, month, day).isAfter(LocalDate.now()))
             throw new FutureWorkException("can't be in the future");
         actualDay = LocalDate.of(year, month, day);
     }
     
+    /**
+     * adds task to the list of tasks if it doesn't have common time interval with the other tasks
+     * @param t
+     * @throws NotSeparatedTimesException 
+     */
     public void addTask(Task t) throws NotSeparatedTimesException{
         if(Util.isSeparatedTime(t, this.tasks))
             tasks.add(t);
@@ -104,18 +139,28 @@ public class WorkDay {
         }
     }
     
+    /**
+     * gets the endTime of the task last given
+     * @return 
+     */
     public LocalTime latestTaskEndTime(){
         if(!tasks.isEmpty())
             return tasks.get(tasks.size() - 1).getEndTime();
         return null;
     }
     
+    /**
+     * writes tasks to te console
+     */
     public void writeTasks(){
         for(int i = 0; i < tasks.size(); i++){
             System.out.println(i + ": " + tasks.get(i).toString());
         }
     }
     
+    /**
+     * lists infinished tasks
+     */
     public void listUnfinishedTasks(){
         for(int i = 0; i < tasks.size(); i++){
             if(tasks.get(i).isUnfinished()){

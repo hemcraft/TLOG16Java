@@ -40,6 +40,11 @@ public class TimeLogger {
         return months;
     }
     
+    /**
+     * checks if given month is alread in the list
+     * @param wm
+     * @return 
+     */
     public boolean isNewMonth(WorkMonth wm){
         for(int i = 0; i < months.size(); i++){
             if(wm.getDate().getYear() == months.get(i).getDate().getYear()){
@@ -50,6 +55,11 @@ public class TimeLogger {
         return true;
     }
     
+    /**
+     * adss a month to the list
+     * @param wm
+     * @throws NotNewMonthException already stored
+     */
     public void addMonth(WorkMonth wm) throws NotNewMonthException{
         if(isNewMonth(wm))
             months.add(wm);
@@ -71,6 +81,19 @@ public class TimeLogger {
         months.get(i).getDayList().get(j).writeTasks();
     }
     
+    /**
+     * adds task to the calendar
+     * @param whichMonth
+     * @param whichDay
+     * @param taskId
+     * @param comment
+     * @param startTime
+     * @throws EmptyTimeFieldException if null
+     * @throws InvalidTaskIdException if wrong format
+     * @throws NoTaskIdException if taskId null
+     * @throws NotSeparatedTimesException tasks have common time intervals
+     * @throws NotExpectedTimeOrderException if endTime before startTime
+     */
     public void addTask(int whichMonth, int whichDay, String taskId, String comment, String startTime) throws EmptyTimeFieldException, InvalidTaskIdException, NoTaskIdException, NotSeparatedTimesException, NotExpectedTimeOrderException{
         Task t = new Task(taskId);
         t.setComment(comment);
@@ -80,19 +103,46 @@ public class TimeLogger {
         months.get(whichMonth).getDayList().get(whichDay).addTask(t);
     }
     
+    /**
+     * finished task by giving it an endTime
+     * @param whichMonth
+     * @param whichDay
+     * @param whichTask
+     * @param endTime
+     * @throws NotExpectedTimeOrderException
+     * @throws EmptyTimeFieldException 
+     */
     public void finishTask(int whichMonth, int whichDay, int whichTask, String endTime) throws NotExpectedTimeOrderException, EmptyTimeFieldException{
         Task temp = months.get(whichMonth).getDayList().get(whichDay).getTaskList().get(whichTask);
         temp.setEndTime(endTime);
     }
     
+    /**
+     * lists unfinished tasks
+     */
     public void showUnfinishedTasks(int whichMonth, int whichDay){
         months.get(whichMonth).getDayList().get(whichDay).listUnfinishedTasks();
     }
-    
+    /**
+     * deletes given task
+     * @param whichMonth
+     * @param whichDay
+     * @param whichTask 
+     */
     public void deleteTask(int whichMonth, int whichDay, int whichTask){
         months.get(whichMonth).getDayList().get(whichDay).getTaskList().remove(whichTask);
     }
     
+    /**
+     * sets all the field of the task, if left empty then nothing changes
+     * @param whichMonth
+     * @param whichDay
+     * @param whichTask
+     * @throws NotExpectedTimeOrderException endTime before startTime
+     * @throws InvalidTaskIdException wring format
+     * @throws EmptyTimeFieldException thrown if null
+     * @throws NoTaskIdException taskId null
+     */
     public void setTaskFields(int whichMonth, int whichDay, int whichTask) throws NotExpectedTimeOrderException, InvalidTaskIdException, EmptyTimeFieldException, NoTaskIdException{
         Scanner sc = new Scanner(System.in);
         Task t = months.get(whichMonth).getDayList().get(whichDay).getTaskList().get(whichTask);
