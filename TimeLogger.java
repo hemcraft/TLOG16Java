@@ -10,76 +10,92 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import timelogger.exceptions.EmptyTimeFieldException;
+import timelogger.exceptions.InvalidTaskIdException;
+import timelogger.exceptions.NoTaskIdException;
+import timelogger.exceptions.NotExpectedTimeOrderException;
+import timelogger.exceptions.NotNewMonthException;
+import timelogger.exceptions.NotSeparatedTimesException;
 
 /**
  *
  * @author Andris
  */
 public class TimeLogger {
-    ArrayList<WorkMonth> months;
+    private ArrayList<WorkMonth> months;
     
-    TimeLogger() {
+    public TimeLogger() {
         months = new ArrayList<WorkMonth>();
     }
     
-    WorkMonth getWorkMonth(int i){
+    public WorkMonth getWorkMonth(int i){
         return months.get(i);
     }
     
-    int getSize(){
+    public int getSize(){
         return months.size();
     }
     
-    boolean isNewMonth(WorkMonth wm){
-        if(months.contains(wm))
-            return false;
-        else
-            return true;
+    public ArrayList<WorkMonth> getMonthList(){
+        return months;
     }
     
-    void addMonth(WorkMonth wm){
+    public boolean isNewMonth(WorkMonth wm){
+        for(int i = 0; i < months.size(); i++){
+            if(wm.getDate().getYear() == months.get(i).getDate().getYear()){
+                if(wm.getDate().getMonthValue() == months.get(i).getDate().getMonthValue())
+                    return false;
+            }
+        }
+        return true;
+    }
+    
+    public void addMonth(WorkMonth wm) throws NotNewMonthException{
         if(isNewMonth(wm))
             months.add(wm);
+        else
+            throw new NotNewMonthException("not new month");
     }
     
-    void listMonths(){
+    public void listMonths(){
             for(int j = 0; j < getSize(); j++){
-                System.out.println(j + ": " + getWorkMonth(j).date.toString() + ",");
+                System.out.println(j + ": " + getWorkMonth(j).getDate().toString() + ",");
             }
         }
     
-    void listDays(int i){
+    public void listDays(int i){
         months.get(i).writeDays();
     }
     
-    void listTasks(int i, int j){
-        months.get(i).days.get(j).writeTasks();
+    public void listTasks(int i, int j){
+        months.get(i).getDayList().get(j).writeTasks();
     }
     
-    void addTask(int whichMonth, int whichDay, String taskId, String comment, String startTime){
+    public void addTask(int whichMonth, int whichDay, String taskId, String comment, String startTime) throws EmptyTimeFieldException, InvalidTaskIdException, NoTaskIdException, NotSeparatedTimesException, NotExpectedTimeOrderException{
         Task t = new Task(taskId);
         t.setComment(comment);
         t.setStartTime(startTime);
-        if(!months.get(whichMonth).days.get(whichDay).tasks.isEmpty())
-            System.out.println(months.get(whichMonth).days.get(whichDay).latestTaskEndTime());
-        months.get(whichMonth).days.get(whichDay).addTask(t);
+        if(!months.get(whichMonth).getDayList().get(whichDay).getTaskList().isEmpty())
+            System.out.println(months.get(whichMonth).getDayList().get(whichDay).latestTaskEndTime());
+        months.get(whichMonth).getDayList().get(whichDay).addTask(t);
     }
     
-    void finishTask(int whichMonth, int whichDay, int whichTask, String endTime){
-        months.get(whichMonth).days.get(whichDay).tasks.get(whichTask).setEndTime(endTime);
+    public void finishTask(int whichMonth, int whichDay, int whichTask, String endTime) throws NotExpectedTimeOrderException, EmptyTimeFieldException{
+        Task temp = months.get(whichMonth).getDayList().get(whichDay).getTaskList().get(whichTask);
+        temp.setEndTime(endTime);
     }
     
-    void showUnfinishedTasks(int whichMonth, int whichDay){
-        months.get(whichMonth).days.get(whichDay).listUnfinishedTasks();
+    public void showUnfinishedTasks(int whichMonth, int whichDay){
+        months.get(whichMonth).getDayList().get(whichDay).listUnfinishedTasks();
     }
     
-    void deleteTask(int whichMonth, int whichDay, int whichTask){
-        months.get(whichMonth).days.get(whichDay).tasks.remove(whichTask);
+    public void deleteTask(int whichMonth, int whichDay, int whichTask){
+        months.get(whichMonth).getDayList().get(whichDay).getTaskList().remove(whichTask);
     }
     
-    void setTaskFields(int whichMonth, int whichDay, int whichTask){
+    public void setTaskFields(int whichMonth, int whichDay, int whichTask) throws NotExpectedTimeOrderException, InvalidTaskIdException, EmptyTimeFieldException, NoTaskIdException{
         Scanner sc = new Scanner(System.in);
-        Task t = months.get(whichMonth).days.get(whichDay).tasks.get(whichTask);
+        Task t = months.get(whichMonth).getDayList().get(whichDay).getTaskList().get(whichTask);
         System.out.println("What is the taskId?");
         System.out.println("[" + t.getTaskId() + "]");
         String taskId = sc.nextLine();
@@ -100,9 +116,10 @@ public class TimeLogger {
         String endTime = sc.nextLine();
         if(!endTime.isEmpty())
             t.setEndTime(endTime);
+            
     }
     
-    void writeStatistics(int whichMonth){
+    public void writeStatistics(int whichMonth) throws EmptyTimeFieldException{
         long sumPerMonth = months.get(whichMonth).getSumPerMonth();
         long requiredMinPerMonth = months.get(whichMonth).getRequiredMinPerMonth();
         System.out.println("Statistics: sumPerMonth: " 
@@ -111,11 +128,11 @@ public class TimeLogger {
                 + requiredMinPerMonth);
         
         System.out.println();
-        for(int i = 0; i < months.get(whichMonth).days.size(); i++){
+        for(int i = 0; i < months.get(whichMonth).getDayList().size(); i++){
             System.out.println(i + " : " + " requiredMinsPerDay " 
-                    +  months.get(whichMonth).days.get(i).requiredMinPerDay 
+                    +  months.get(whichMonth).getDayList().get(i).getRequiredMinPerDay()
                     + " sumPerDay: " 
-                    + months.get(whichMonth).days.get(i).getSumPerDay());
+                    + months.get(whichMonth).getDayList().get(i).getSumPerDay());
         }
     }
 }

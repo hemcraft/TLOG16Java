@@ -6,101 +6,194 @@
 package tlog16java;
 
 import java.time.LocalTime;
+import timelogger.exceptions.EmptyTimeFieldException;
+import timelogger.exceptions.InvalidTaskIdException;
+import timelogger.exceptions.NoTaskIdException;
+import timelogger.exceptions.NotExpectedTimeOrderException;
+import static tlog16java.Util.roundToMultipleQuarterHour;
 
 /**
  *
  * @author Andris
  */
 public class Task {
-    String taskId;
-    LocalTime startTime;
-    LocalTime endTime;
-    String comment;
+    private String taskId;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private String comment;
     
-    Task(String taskId, int startHour, int startMin, int endHour, int endMin, String comment){
+    /*
+    if(t.getEndTime() == null)
+            throw new EmptyTimeFieldException();
+    */
+    
+    public Task(String taskId, int startHour, int startMin, int endHour, int endMin, String comment) throws NotExpectedTimeOrderException, InvalidTaskIdException, NoTaskIdException, EmptyTimeFieldException{
         this.taskId = taskId;
+        if(taskId == "")
+            throw new NoTaskIdException("taskId cant be empty");
+        if(!isValidTaskId())
+            throw new InvalidTaskIdException("wrong format");
         this.comment = comment;
         this.startTime.of(startHour, startMin);
+        if(this.getStartTime().isAfter(LocalTime.of(endHour, endMin)))
+            throw new NotExpectedTimeOrderException("endTime before startTime");
         this.endTime.of(endHour, endMin);
+        if(!Util.isMultipleQuarterHour(this.getStartTime(), this.getEndTime())){
+            this.endTime = roundToMultipleQuarterHour(this.getStartTime(), LocalTime.of(endHour, endMin));
+        }
     }
     
-    Task(String taskId, String startTime, String endTime, String comment){
+    public Task(String taskId, String startTime, String endTime, String comment) throws NotExpectedTimeOrderException, InvalidTaskIdException, NoTaskIdException, EmptyTimeFieldException{
         this.taskId = taskId;
+        if(taskId == "")
+            throw new NoTaskIdException("taskId cant be empty");
+        if(!isValidTaskId())
+            throw new InvalidTaskIdException("wrong format");
         this.comment = comment;
         this.startTime = LocalTime.parse(startTime);
+        if(this.getStartTime().isAfter(LocalTime.parse(endTime)))
+            throw new NotExpectedTimeOrderException("endTime before startTime");
         this.endTime = LocalTime.parse(endTime);
+        if(!Util.isMultipleQuarterHour(this.getStartTime(), this.getEndTime())){
+            this.endTime = roundToMultipleQuarterHour(this.getStartTime(), LocalTime.parse(endTime));
+        }
     }
     
-    Task(String taskId){
+    public Task(String taskId) throws InvalidTaskIdException, NoTaskIdException{
         this.taskId = taskId;
+        if(taskId == "")
+            throw new NoTaskIdException("taskId cant be empty");
+        if(!isValidTaskId())
+            throw new InvalidTaskIdException("wrong format");
     }
         
-    String getTaskId(){
+    public String getTaskId(){
         return taskId;
     }
     
-    LocalTime getStartTime(){
+    public LocalTime getStartTime(){
         return startTime;
     }
     
-    LocalTime getEndTime(){
+    public LocalTime getEndTime(){
         return endTime;
     }
     
-    String getComment(){
+    public String getComment(){
         return comment;
     }
     
-    public long getMinPerTask(){
-        return endTime.getMinute() - startTime.getMinute();
+    public long getMinPerTask() throws EmptyTimeFieldException{
+        if(endTime == null || startTime == null)
+            throw new EmptyTimeFieldException("empty");
+        return ((endTime.getMinute() - startTime.getMinute()) + 60 * (endTime.getHour() - startTime.getHour()));
     }
     
-    void setTaskId(String taskid){
+    public void setTaskId(String taskid) throws InvalidTaskIdException, NoTaskIdException{
         this.taskId = taskid;
+        if(taskId == null)
+            throw new NoTaskIdException("taskId cant be empty");
+        if(!isValidTaskId())
+            throw new InvalidTaskIdException("wrong format");
     }
     
-    void setComment(String comment){
+    public void setComment(String comment){
         this.comment = comment;
     }
     
-    void setStartTime(int hour, int min){
+    public void setStartTime(int hour, int min) throws NotExpectedTimeOrderException, EmptyTimeFieldException{
         this.startTime.of(hour, min);
+        if(this.endTime != null){
+            if(!Util.isMultipleQuarterHour(this.getStartTime(), this.getEndTime())){
+                this.endTime = roundToMultipleQuarterHour(this.getStartTime(), this.endTime);
+            }
+            if(startTime.isAfter(endTime))
+                throw new NotExpectedTimeOrderException("not expected order");
+        }
     }
     
-    void setStartTime(String time){
+    public void setStartTime(String time) throws NotExpectedTimeOrderException, EmptyTimeFieldException{
         this.startTime = LocalTime.parse(time);
+        if(endTime != null){
+            if(LocalTime.parse(time).isAfter(endTime))
+                throw new NotExpectedTimeOrderException("not expected order");
+            if(!Util.isMultipleQuarterHour(this.getStartTime(), this.getEndTime())){
+                this.endTime = roundToMultipleQuarterHour(this.getStartTime(), this.endTime);
+            }
+        }
     }
     
-    void setStartTime(LocalTime time){
+    public void setStartTime(LocalTime time) throws NotExpectedTimeOrderException, EmptyTimeFieldException{
         this.startTime = time;
+        if(endTime != null){
+            if(time.isAfter(endTime))
+                throw new NotExpectedTimeOrderException("not expected order");
+            if(!Util.isMultipleQuarterHour(this.getStartTime(), this.getEndTime())){
+                this.endTime = roundToMultipleQuarterHour(this.getStartTime(), this.endTime);
+            }
+        }
     }
     
-    void setEndTime(int hour, int min){
+    public void setEndTime(int hour, int min) throws NotExpectedTimeOrderException, EmptyTimeFieldException{
+        if(this.getStartTime().isAfter(LocalTime.of(hour, min)))
+            throw new NotExpectedTimeOrderException("endTime before startTime");
         this.endTime.of(hour, min);
+        if(this.startTime != null){
+            if(!Util.isMultipleQuarterHour(this.getStartTime(), this.getEndTime())){
+                this.endTime = roundToMultipleQuarterHour(this.getStartTime(), LocalTime.of(hour, min));
+            }
+        }
     }
     
-    void setEndTime(String time){
+    public void setEndTime(String time) throws NotExpectedTimeOrderException, EmptyTimeFieldException{
+        if(time.isEmpty())
+            throw new EmptyTimeFieldException("empty time field");
+        if(this.getStartTime().isAfter(LocalTime.parse(time)))
+            throw new NotExpectedTimeOrderException("endTime before startTime");     
         this.endTime = LocalTime.parse(time);
+        if(this.startTime != null){
+            if(!Util.isMultipleQuarterHour(this.getStartTime(), this.getEndTime())){
+                this.endTime = roundToMultipleQuarterHour(this.getStartTime(), LocalTime.parse(time));
+            }
+        }
     }
     
-    void setEndTime(LocalTime time){
+    public void setEndTime(LocalTime time) throws NotExpectedTimeOrderException, EmptyTimeFieldException{
+        if(this.getStartTime().isAfter(time))
+            throw new NotExpectedTimeOrderException("endTime before startTime");
         this.endTime = time;
+        if(this.startTime != null){
+            if(!Util.isMultipleQuarterHour(this.getStartTime(), this.getEndTime())){
+                this.endTime = roundToMultipleQuarterHour(this.getStartTime(), time);
+            }
+        }
     }
     
-    boolean isValidTaskId(){
+    public boolean isValidTaskId(){
         return isValidRedMineTaskId() || isValidLTTaskId();
     }
     
-    boolean isValidRedMineTaskId(){
+    private boolean isValidRedMineTaskId(){
         return taskId.matches("\\d\\d\\d\\d");
     }
     
-    boolean isValidLTTaskId(){
+    private boolean isValidLTTaskId(){
         return taskId.matches("LT-\\d\\d\\d\\d");
     }
     
     public boolean commonParts(Task t){
-        return !(this.getStartTime().isAfter(t.getEndTime())  || this.getEndTime().isBefore(t.getStartTime()));
+        /*System.out.println(this.getStartTime().getMinute());
+        System.out.println(this.getEndTime().getMinute());
+        System.out.println((this.getEndTime().isBefore(t.getStartTime()))
+        && this.getStartTime().getMinute() != this.getEndTime().getMinute());*/
+        return !(this.getStartTime().isAfter(t.getEndTime()) 
+                ||
+                (this.getEndTime().isBefore(t.getStartTime()))
+                ||
+                this.getEndTime().compareTo(t.getStartTime()) == 0
+                ||
+                this.getStartTime().compareTo(t.getEndTime()) == 0
+                );
     }
     
     public String toString(){

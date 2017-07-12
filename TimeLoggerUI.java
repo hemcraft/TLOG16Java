@@ -7,6 +7,17 @@ package tlog16java;
 
 import java.time.LocalDate;
 import java.util.Scanner;
+import timelogger.exceptions.EmptyTimeFieldException;
+import timelogger.exceptions.FutureWorkException;
+import timelogger.exceptions.InvalidTaskIdException;
+import timelogger.exceptions.NegativeMinutesOfWorkException;
+import timelogger.exceptions.NoTaskIdException;
+import timelogger.exceptions.NotExpectedTimeOrderException;
+import timelogger.exceptions.NotNewDateException;
+import timelogger.exceptions.NotNewMonthException;
+import timelogger.exceptions.NotSeparatedTimesException;
+import timelogger.exceptions.NotTheSameMonthException;
+import timelogger.exceptions.WeekendNotEnabledException;
 
 /**
  *
@@ -17,7 +28,7 @@ public class TimeLoggerUI {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NegativeMinutesOfWorkException, FutureWorkException, InvalidTaskIdException, NoTaskIdException, NotSeparatedTimesException, EmptyTimeFieldException, NotExpectedTimeOrderException, WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException, NotNewMonthException {
         // TODO code application logic here
         String menu = "0. Exit\n" +
                       "1. List months: shows a counter, the year & the month line by line (example: 1. 2016-09, 2. 2016-10, ...)\n" +
@@ -95,9 +106,9 @@ public class TimeLoggerUI {
                     int whichDay = sc.nextInt();
                     System.out.println("What are the required working hours?");
                     int requiredWorkingHours = sc.nextInt();
-                    timeLogger.months.get(whichMonth).addWorkDay(new WorkDay(requiredWorkingHours,
+                    timeLogger.getMonthList().get(whichMonth).addWorkDay(new WorkDay(requiredWorkingHours,
                                                                  LocalDate.of(LocalDate.now().getYear(), 
-                                                                         timeLogger.months.get(whichMonth).getDate().getMonthValue(), 
+                                                                         timeLogger.getMonthList().get(whichMonth).getDate().getMonthValue(), 
                                                                          whichDay)), 
                                                                  true);
                     break;
@@ -116,7 +127,11 @@ public class TimeLoggerUI {
                     String comment = sc.nextLine();
                     System.out.println("When does the task start? format: 'hh:mm'");
                     String startTime = sc.nextLine();
+                    try{
                     timeLogger.addTask(whichMonth, whichDay, taskId, comment, startTime);
+                    }catch(EmptyTimeFieldException e){
+                        e.printStackTrace();
+                    }
                     break;
                 }
                 case 7 : {
@@ -133,7 +148,11 @@ public class TimeLoggerUI {
                     sc.nextLine();
                     System.out.println("What is the endtime of the task? format: 'hh:mm'");
                     String endTime = sc.nextLine();
-                    timeLogger.finishTask(whichMonth, whichDay, whichTask, endTime);
+                    try{
+                        timeLogger.finishTask(whichMonth, whichDay, whichTask, endTime);
+                    }catch(NotExpectedTimeOrderException e){
+                        e.printStackTrace();
+                    }
                     break;
                 }
                 case 8 : {

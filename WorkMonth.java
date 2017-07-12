@@ -10,58 +10,66 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
+import timelogger.exceptions.EmptyTimeFieldException;
+import timelogger.exceptions.NotNewDateException;
+import timelogger.exceptions.NotTheSameMonthException;
+import timelogger.exceptions.WeekendNotEnabledException;
 
 /**
  *
  * @author Andris
  */
 public class WorkMonth {
-    ArrayList<WorkDay> days;
-    YearMonth date;
-    long sumPerMonth;
-    long requiredMinPerMonth;
+    private ArrayList<WorkDay> days;
+    private YearMonth date;
+    private long sumPerMonth;
+    private long requiredMinPerMonth;
     
-    WorkMonth(int year, int month){
+    public WorkMonth(int year, int month){
         this.date = YearMonth.of(year, month);
         days = new ArrayList<WorkDay>();
     }
     
-    WorkMonth(int year, Month month){
+    public WorkMonth(int year, Month month){
         this.date = YearMonth.of(year, month);
         days = new ArrayList<WorkDay>();
     }
     
-    void calculateRequiredMinPerMonth(){
+    private void calculateRequiredMinPerMonth(){
         for(int i = 0; i < days.size(); i++){
             requiredMinPerMonth += days.get(i).getRequiredMinPerDay();
         }
     } 
     
-    void calculateSumPerMonth(){
+    private void calculateSumPerMonth() throws EmptyTimeFieldException{
         for(int i = 0; i < days.size(); i++){
-            sumPerMonth += days.get(i).getSumPerDay();
+            sumPerMonth = sumPerMonth + days.get(i).getSumPerDay();
         }
     }
     
-    YearMonth getDate(){
+    public YearMonth getDate(){
         return date;
     }
     
-    WorkDay getDays(int i){
+    public WorkDay getDays(int i){
         return days.get(i);
     }
     
-    long getSumPerMonth(){
+    public ArrayList<WorkDay> getDayList(){
+        return days;
+    }
+    
+    public long getSumPerMonth() throws EmptyTimeFieldException{
         calculateSumPerMonth();
         return sumPerMonth;
     }
     
-    long getRequiredMinPerMonth(){
+    public long getRequiredMinPerMonth(){
         calculateRequiredMinPerMonth();
         return requiredMinPerMonth;
     }
     
-    long getExtraMinPerMonth(){
+    public long getExtraMinPerMonth() throws EmptyTimeFieldException{
         long extraMinThisMonth = 0;
         for(int i = 0; i < days.size(); i++){
             extraMinThisMonth += days.get(i).getExtraMinPerDay();
@@ -69,41 +77,47 @@ public class WorkMonth {
         return extraMinThisMonth;
     }
     
-    boolean isNewDate(WorkDay workDay){
-            if(days.contains(workDay))
-                return false;
-            else
-                return true;
-        
-    }
-    
-    boolean isSameMonth(WorkDay workDay){
-        if(date.getMonthValue() == workDay.actualDay.getMonthValue())
+    public boolean isNewDate(WorkDay workDay){
+            for(int i = 0; i < days.size(); i++){
+                if(workDay.getActualDay().equals(days.get(i).getActualDay()))
+                    return false;
+            }
             return true;
-        else
-            return false;
     }
     
-    void addWorkDay(WorkDay wd, boolean isWeekendEnabled){
+    public boolean isSameMonth(WorkDay workDay){
+        return (date.getMonthValue() == workDay.getActualDay().getMonthValue());          
+    }
+    
+    public void addWorkDay(WorkDay wd, boolean isWeekendEnabled) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException{
         boolean weekendDayToo = (isWeekendEnabled == true) && isSameMonth(wd) && isNewDate(wd);
         boolean weekDayOnly = (isWeekendEnabled == false) && (Util.isWeekDay(wd.getActualDay())) && isSameMonth(wd) && isNewDate(wd);
-        //System.out.println("isWeekendEnabled: " + isWeekendEnabled + " weekDay: " + (Util.isWeekDay(wd.getActualDay())) + " month: " + isSameMonth(wd) + " date: " + isNewDate(wd));
+        if(isWeekendEnabled == false)
+            throw new WeekendNotEnabledException("weekend not enabled");
+        if(!isNewDate(wd))
+            throw new NotNewDateException("not new date");
+        if(!isSameMonth(wd))
+            throw new NotTheSameMonthException("not the same month");
         if(weekendDayToo || weekDayOnly){
             days.add(wd);
         }
     }
     
-    void addWorkDay(WorkDay wd){
+    public void addWorkDay(WorkDay wd) throws WeekendNotEnabledException, NotNewDateException, NotTheSameMonthException{
         boolean isWeekendEnabled = false;
         boolean weekDayOnly = (Util.isWeekDay(wd.getActualDay())) && isSameMonth(wd) && isNewDate(wd);
+        if(!isNewDate(wd))
+            throw new NotNewDateException("not new date");
+        if(!isSameMonth(wd))
+            throw new NotTheSameMonthException("not the same month");
         if(weekDayOnly){
             days.add(wd);
         }
     }
     
-    void writeDays(){
+    public void writeDays(){
         for(int i = 0; i < days.size(); i++){
-            System.out.println(i + ": " + days.get(i).actualDay.toString());
+            System.out.println(i + ": " + days.get(i).getActualDay().toString());
         }
     }
 }
